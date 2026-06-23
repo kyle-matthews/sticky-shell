@@ -6,6 +6,9 @@
 //   qs -c quickshell-stickynotes ipc call manager toggle
 // Create a new note with:
 //   qs -c quickshell-stickynotes ipc call notes create
+// Toggle all notes between sitting on the desktop (below normal windows)
+// and floating above them with:
+//   qs -c quickshell-stickynotes ipc call notes toggleLayer
 
 import QtQuick
 import Quickshell
@@ -19,6 +22,11 @@ ShellRoot {
   readonly property var allScreenNames: Quickshell.screens.map(function (s) {
     return s.name;
   })
+
+  // Global toggle: false = notes sit on the desktop (below normal windows),
+  // true = notes float above normal windows. Session-only by design - notes
+  // always start tucked on the desktop on launch.
+  property bool notesOnTop: false
 
   function createNoteOnPrimaryScreen() {
     var s = Quickshell.screens[0];
@@ -52,6 +60,10 @@ ShellRoot {
 
     function create() {
       root.createNoteOnPrimaryScreen();
+    }
+
+    function toggleLayer() {
+      root.notesOnTop = !root.notesOnTop;
     }
   }
 
@@ -108,7 +120,7 @@ ShellRoot {
             }
 
             WlrLayershell.namespace: "quickshell-stickynotes-" + noteId
-            WlrLayershell.layer: WlrLayer.Bottom
+            WlrLayershell.layer: root.notesOnTop ? WlrLayer.Top : WlrLayer.Bottom
             WlrLayershell.exclusionMode: ExclusionMode.Ignore
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
